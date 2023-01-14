@@ -1,23 +1,32 @@
 import React, { useState } from 'react'
+import axios from 'axios'
 import { LockClosedIcon } from '@heroicons/react/20/solid'
 import Logo from '../assets/Ativus.png'
 
 const SigninForm = () => {
-  const [user, setUser] = useState({
-    email: '',
-    user_password: '',
-    passwordConfirm: ''
-  })
-  const valorInput = e => setUser({ ...user, [e.target.name]: e.target.value })
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const url = 'http://localhost/EducAtivus/src/api/usuarioCadastro.php'
 
-  const cadUsuario = async e => {
+  const handleSubmit = e => {
     e.preventDefault()
-
-    if (user.user_password !== user.passwordConfirm) {
-      console.log('As senhas diferem')
-      console.log(user.email)
+    if (email.length === 0) {
+      alert('O email não pode ficar em branco.')
+    } else if (password.length === 0) {
+      alert('A senha não pode ficar em branco.')
+    } else if (confirmPassword.length === 0) {
+      alert('Confirme a senha.')
     } else {
-      console.log('As senhas são iguais')
+      if (password === confirmPassword) {
+        let fData = new FormData()
+
+        fData.append('email', email)
+        fData.append('password', password)
+
+        axios.post(url, fData).catch(error => alert(error))
+        console.log('chegou')
+      }
     }
   }
 
@@ -30,7 +39,7 @@ const SigninForm = () => {
             Cadastre-se
           </h2>
         </div>
-        <form className="mt-8 space-y-1" method="POST" onSubmit={cadUsuario}>
+        <form className="mt-8 space-y-1" method="POST" onSubmit={handleSubmit}>
           <input
             id="email-address"
             name="email"
@@ -39,7 +48,7 @@ const SigninForm = () => {
             required
             className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
             placeholder="E-mail"
-            onChange={valorInput}
+            onChange={e => setEmail(e.target.value)}
           />
 
           <input
@@ -50,7 +59,7 @@ const SigninForm = () => {
             required
             className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
             placeholder="Senha"
-            onChange={valorInput}
+            onChange={e => setPassword(e.target.value)}
           />
 
           <input
@@ -61,7 +70,7 @@ const SigninForm = () => {
             required
             className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
             placeholder="Confirmar Senha"
-            onChange={valorInput}
+            onChange={e => setConfirmPassword(e.target.value)}
           />
           <button
             name="btn_cadastrar"
@@ -76,6 +85,7 @@ const SigninForm = () => {
             </span>
             Criar Conta
           </button>
+          <span className="error-message" name="error-message"></span>
         </form>
       </div>
     </div>

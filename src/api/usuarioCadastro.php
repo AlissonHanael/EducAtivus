@@ -1,60 +1,35 @@
 <?php
 
-require_once "conexao.php";
+header('Access-Control-Allow-Origin: *');
 
-if (isset($_POST['btn_cadastrar'])) {
+$conn = new mysqli('localhost', 'root', '', 'educativus_homo');
 
-  $id_user = mysqli_escape_string($conexao, $_POST['id_user']);
-  $email = mysqli_escape_string($conexao, $_POST['email']);
-  $password = trim(mysqli_escape_string($conexao, $_POST['user_password']));
+if (mysqli_connect_error()) {
+  echo "Error connecting to database " . mysqli_connect_error();
+  exit();
+} else {
+  $email = $_POST['email'];
+  $password = trim($_POST['password']);
 
   $password = md5($password);
 
-  $sql_email = "SELECT email FROM usuario WHERE email = '$email' ";
+  $sql_login = "SELECT email FROM usuario WHERE email = '$email' ";
 
-  $resultado = mysqli_query($conexao, $sql_email);
+  $resultado = mysqli_query($conn, $sql_login);
   $array = mysqli_fetch_array($resultado);
 
   if ($email == $array['email']) {
-    header('Location: usuario-novo.php?existe');
+    echo '<script type="aplication/javascript">alert("um usuario com esse email já está cadastrado")</script>';
   } else {
 
+    $sql = 'INSERT INTO usuario (email, user_password) VALUES (\'' . $email . '\',\'' . $password . '\');';
+    $res = mysqli_query($conn, $sql);
 
-    $sql = "INSERT INTO usuario(email, password) VALUES(?, ?)";
-    $tipos = "ss";
-    $parametros = array($email, $password);
-
-    $stmt = mysqli_prepare($conexao, $sql);
-
-    if (!$stmt) {
-      echo "Erro no cadastro do usuario: " . mysqli_error($conexao);
-    }
-
-    mysqli_stmt_bind_param($stmt, $tipos, ...$parametros);
-
-    mysqli_stmt_execute($stmt);
-
-    if (mysqli_stmt_error($stmt)) {
-      header('Location: usuario-novo.php?erro');
+    if ($res) {
+      echo [`<script type="javascript">alert("Usuario cadastrado com sucesso!");</script>`];
     } else {
-      if ($id_cliente > 0) {
-        header('Location: usuario-novo.php?atualizacao');
-      }
-      header('Location: usuario-novo.php?sucesso');
+      echo `<script type="javascript">alert("Usuario não foi cadastrado!")</script>`;
     }
-    mysqli_stmt_close($stmt);
   }
-}
-if (isset($_POST['deleta'])) {
-  $id_usuario = mysqli_escape_string($conexao, $_POST['id_usuario']);
-  $sql = "DELETE FROM usuario WHERE id_usuario = ? ";
-  $stmt = mysqli_prepare($conexao, $sql);
-  mysqli_stmt_bind_param($stmt, "i", $id_usuario);
-  mysqli_stmt_execute($stmt);
-  $erro = mysqli_stmt_error($stmt);
-  mysqli_stmt_close($stmt);
-  if ($erro)
-    echo 0;
-  else
-    echo 1;
+  $conn->close();
 }
